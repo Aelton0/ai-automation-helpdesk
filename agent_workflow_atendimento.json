@@ -1,0 +1,466 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "triagem-wab",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -336,
+        -48
+      ],
+      "id": "0b15ed3f-0183-4f3f-b19a-0df7566fd5dd",
+      "name": "Webhook",
+      "webhookId": "d4f643bb-e0e6-4715-830f-f6d26b78c3c9"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a9ab01a0-9ec1-47b3-b189-4a259768a2bb",
+              "name": "NomeCliente",
+              "value": "={{ $json.body.cliente }}",
+              "type": "string"
+            },
+            {
+              "id": "300aedf3-ae71-45ee-8176-3a555107c4e2",
+              "name": "Celular",
+              "value": "={{ $json.body.celular }}",
+              "type": "string"
+            },
+            {
+              "id": "b06f5350-a827-4a05-8f41-f64700d3a415",
+              "name": "MensagemOriginal",
+              "value": "={{ $json.body.mensagem }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -128,
+        -48
+      ],
+      "id": "661f030b-b2da-4888-9ed2-8197c8146e4e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "É um assistente de triagem de nível empresarial. A tua função é ler a mensagem do cliente e classificar a intenção em UMA destas três categorias exatas: AGENDAMENTO, SUPORTE_URGENTE, DUVIDA_FAQ. Deves retornar a tua resposta ESTRITAMENTE num formato JSON válido, sem nenhum texto adicional, com a estrutura: {\"categoria\": \"TIPO\", \"sentimento\": \"POSITIVO, NEUTRO ou NEGATIVO\", \"resumo\": \"Resumo em 10 palavras\"}"
+            },
+            {
+              "content": "={{ $json.MensagemOriginal }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        -48
+      ],
+      "id": "e8b0ce2b-ed02-4e1f-b7e1-fbd93067758e",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "iHPFarbHTIm8uLkU",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output[0].content[0].text.categoria }}",
+                    "rightValue": "AGENDAMENTO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "318d3564-ca89-4772-bb7d-a2e0138bdd48"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "efdf1ac4-8143-43dd-80f2-e6779b7322d3",
+                    "leftValue": "={{ $json.output[0].content[0].text.categoria }}",
+                    "rightValue": "SUPORTE_URGENTE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "53d24a54-022e-4181-95a1-4e862fb1e508",
+                    "leftValue": "={{ $json.output[0].content[0].text.categoria }}",
+                    "rightValue": "DUVIDA_FAQ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -48
+      ],
+      "id": "c1e48308-c3d9-4538-b04f-0f4cc5d1828d",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1AIoKu1GpKls093pMR4QJoIa0n2TPBgolKxI75_iK6og",
+          "mode": "list",
+          "cachedResultName": "waba",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AIoKu1GpKls093pMR4QJoIa0n2TPBgolKxI75_iK6og/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1AIoKu1GpKls093pMR4QJoIa0n2TPBgolKxI75_iK6og/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Id": "={{ $json.output[0].id }}",
+            "Nome": "={{ $('Edit Fields').item.json.NomeCliente }}",
+            "Telefone": "={{ $('Edit Fields').item.json.Celular }}",
+            "Mensagem": "={{ $('Edit Fields').item.json.MensagemOriginal }}",
+            "Categoria": "={{ $json.output[0].content[0].text.categoria }}",
+            "Data": "={{ $('Webhook').item.json.body.timestamp }}"
+          },
+          "matchingColumns": [
+            "Id"
+          ],
+          "schema": [
+            {
+              "id": "Id",
+              "displayName": "Id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Data",
+              "displayName": "Data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Telefone",
+              "displayName": "Telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Mensagem",
+              "displayName": "Mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "1fde40c5-d769-4fbd-943e-3a7028cb5e2c",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "DhrdR9xJJEKzHWqw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#alertas-urgentes",
+          "mode": "name"
+        },
+        "text": "=🚨 ALERTA DE URGÊNCIA (WABA) 🚨\nCliente: {{ $('Edit Fields').item.json.NomeCliente }}\nResumo da IA:{{ $json.output[0].content[0].text.resumo }} \nSentimento: {{ $json.output[0].content[0].text.sentimento }}\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        736,
+        128
+      ],
+      "id": "4e1fd4a2-1581-4a4b-aaf4-d9936331c9f6",
+      "name": "Send a message",
+      "webhookId": "a47260f4-0613-435c-b21a-8e69dd8abfb2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "GhzyyBZRgQa3188X",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Você é o assistente virtual de uma rede de franquias. Sua função é responder a dúvidas de clientes de forma curta, educada e direta. Use as seguintes informações como base de conhecimento:\n- Horário de funcionamento: Segunda a Sexta das 08h às 18h.\n- Endereço principal: Av. Borges de Medeiros, 123 - Porto Alegre.\n- Formas de pagamento: PIX, Cartão de Crédito e Boleto.\nSe perguntarem algo fora disso, diga educadamente que um humano vai entrar em contato em breve."
+            },
+            {
+              "content": "={{ $('Edit Fields').item.json.MensagemOriginal }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        480,
+        336
+      ],
+      "id": "1633913b-50d8-4836-800f-b370449c8ac1",
+      "name": "Message a model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "iHPFarbHTIm8uLkU",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.empresa.com/v1/whatsapp/send",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"to\": \"{{ $('Edit Fields').item.json.Celular }}\",\n  \"message\": \"{{ $json.output[0].content }}\",\n  \"type\": \"{{ $json.output[0].content[0].type }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        880,
+        336
+      ],
+      "id": "4663e415-cf6d-4334-a30e-0da21409ab8a",
+      "name": "HTTP Request",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        []
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "c68fc0bb-3418-43da-baae-8bf569716478",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7cffe849ff0e5b4de7c8e2319d4563d8f66da1fdf53383e438da4ec949c9b696"
+  },
+  "nodeGroups": [],
+  "id": "6VtGNeXF77Y15kd2",
+  "tags": []
+}
