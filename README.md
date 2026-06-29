@@ -37,9 +37,9 @@ O pipeline foi construído para ser modular, resiliente e escalável. O fluxo de
 
 ## 📸 Demonstração Visual
 
-![Visão Geral do Fluxo n8n](caminho/para/sua/imagem-do-fluxo.png)
-*(Nota: Adicione uma captura de tela do seu fluxo completo do n8n aqui)*
-
+![Visão Geral do Fluxo n8n](docs/Print-workflow.png)
+![Visão Geral do Slack](docs/Slack.png)
+![Visão Geral do Sheets](docs/sheets.png)
 ---
 
 ## 📦 Como Replicar este Workflow
