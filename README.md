@@ -13,7 +13,7 @@ O pipeline foi construído para ser modular, resiliente e escalável. O fluxo de
 
 1. **Gateway de Entrada (Webhook):** Escuta ativa de requisições HTTP POST simulando o recebimento de mensagens do WhatsApp/Trinks, com payloads estruturados em formato JSON.
 2. **Sanitização de Dados (Edit Fields):** Tratamento das variáveis de entrada para garantir que apenas os dados essenciais (Nome, Telefone, Mensagem) sejam processados, descartando metadados desnecessários de rede.
-3. **Motor Cognitivo (OpenAI via Prompt Engineering):** Um nó de LLM (`gpt-4o-mini`) configurado com regras estritas de sistema para devolver **exclusivamente um objeto JSON**. A IA analisa o sentimento e categoriza a intenção em três rotas:
+3. **Motor Cognitivo (OpenAI via Prompt Engineering):** Um nó de LLM (`gpt-4o-nano`) configurado com regras estritas de sistema para devolver **exclusivamente um objeto JSON**. A IA analisa o sentimento e categoriza a intenção em três rotas:
    * `AGENDAMENTO`
    * `SUPORTE_URGENTE`
    * `DUVIDA_FAQ`
