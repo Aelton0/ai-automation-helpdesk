@@ -64,7 +64,7 @@
           "values": [
             {
               "role": "system",
-              "content": "É um assistente de triagem de nível empresarial. A tua função é ler a mensagem do cliente e classificar a intenção em UMA destas três categorias exatas: AGENDAMENTO, SUPORTE_URGENTE, DUVIDA_FAQ. Deves retornar a tua resposta ESTRITAMENTE num formato JSON válido, sem nenhum texto adicional, com a estrutura: {\"categoria\": \"TIPO\", \"sentimento\": \"POSITIVO, NEUTRO ou NEGATIVO\", \"resumo\": \"Resumo em 10 palavras\"}"
+              "content": "Você é um assistente de triagem cognitiva de nível empresarial para operações integradas. Sua única função é ler a mensagem enviada pelo cliente e classificar a intenção dele de forma determinística em UMA destas quatro categorias exatas:\n\n1. AGENDAMENTO: Se o cliente deseja marcar, reagendar, cancelar ou solicitar horários de serviços.\n2. SUPORTE_URGENTE: Se o cliente relata um problema crítico, falha operacional grave ou urgência imediata.\n3. DUVIDA_FAQ: Se o cliente faz uma pergunta simples e genérica sobre horários de funcionamento, endereço, preços ou formas de pagamento aceitas.\n4. UNKNOWN_OR_AMBIGUOUS: Se a mensagem do cliente for excessivamente vaga, fora do contexto de negócios, confusa, ou se você não conseguir determinar a intenção com mais de 95% de certeza.\n\nVocê deve retornar a sua resposta ESTRITAMENTE em um formato JSON válido, sem qualquer texto introdutório, explicações ou caracteres adicionais de formatação (NÃO utilize blocos de código markdown como ```json). \n\nA estrutura do objeto JSON de saída deve ser exatamente esta:\n{\n  \"categoria\": \"CATEGORIA_ESCOLHIDA\",\n  \"sentimento\": \"POSITIVO, NEUTRO ou NEGATIVO\",\n  \"resumo\": \"Breve resumo da solicitação em até 10 palavras\"\n}"
             },
             {
               "content": "={{ $json.MensagemOriginal }}"
@@ -157,6 +157,29 @@
                     "id": "53d24a54-022e-4181-95a1-4e862fb1e508",
                     "leftValue": "={{ $json.output[0].content[0].text.categoria }}",
                     "rightValue": "DUVIDA_FAQ",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fa7713f3-6401-4c00-958c-1c1df415cb09",
+                    "leftValue": "={{ $json.output[0].content[0].text.categoria }}",
+                    "rightValue": "UNKNOWN_OR_AMBIGUOUS",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -296,14 +319,14 @@
           "value": "#alertas-urgentes",
           "mode": "name"
         },
-        "text": "=🚨 ALERTA DE URGÊNCIA (WABA) 🚨\nCliente: {{ $('Edit Fields').item.json.NomeCliente }}\nResumo da IA:{{ $json.output[0].content[0].text.resumo }} \nSentimento: {{ $json.output[0].content[0].text.sentimento }}\n",
+        "text": "=🚨 ALERTA DE URGÊNCIA (WABA) 🚨\nCliente: {{ $('Edit Fields').item.json.NomeCliente }}\nMensagem do Usuario: {{ $('Edit Fields').item.json.MensagemOriginal }}\nResumo da IA:{{ $json.output[0].content[0].text.resumo }} \nSentimento: {{ $json.output[0].content[0].text.sentimento }}\n",
         "otherOptions": {}
       },
       "type": "n8n-nodes-base.slack",
       "typeVersion": 2.5,
       "position": [
-        736,
-        128
+        944,
+        96
       ],
       "id": "4e1fd4a2-1581-4a4b-aaf4-d9936331c9f6",
       "name": "Send a message",
@@ -370,6 +393,34 @@
       "id": "4663e415-cf6d-4334-a30e-0da21409ab8a",
       "name": "HTTP Request",
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#alertas-urgentes",
+          "mode": "name"
+        },
+        "text": "=🚨 ALERTA DE COMANDO NÃO IDENTIFICADO (WABA) 🚨\nCliente: {{ $('Edit Fields').item.json.NomeCliente }}\nResumo da IA para revisão:{{ $json.output[0].content[0].text.resumo }} \nMensagem Usuario: {{ $('Edit Fields').item.json.MensagemOriginal }}\nSentimento: {{ $json.output[0].content[0].text.sentimento }}\n\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.5,
+      "position": [
+        688,
+        192
+      ],
+      "id": "81664a6a-cb4d-4237-8354-06b85663cb2c",
+      "name": "Send a message1",
+      "webhookId": "a47260f4-0613-435c-b21a-8e69dd8abfb2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "GhzyyBZRgQa3188X",
+          "name": "Slack account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -429,6 +480,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -455,7 +513,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "c68fc0bb-3418-43da-baae-8bf569716478",
+  "versionId": "bee6331f-f3e2-4019-b03e-f0ea2a5d36e8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "7cffe849ff0e5b4de7c8e2319d4563d8f66da1fdf53383e438da4ec949c9b696"
